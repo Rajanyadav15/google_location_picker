@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 // import 'package:google_api_headers/google_api_headers.dart';
@@ -346,22 +345,22 @@ class _PlacePickerState extends State<PlacePicker> {
                 ),
                 SizedBox(height: 16),
                 ElevatedButton(
-                    onPressed: () {
-                      AppSettings.openAppSettings().then((e) async {
-                        await Geolocator.isLocationServiceEnabled()
-                            .then((val) async {
-                          if (val == true) {
-                            await provider!.updateCurrentLocation(
-                                gracefully:
-                                    widget.ignoreLocationPermissionErrors);
-                          } else {
-                            Navigator.pop(context);
-                            return;
-                          }
-                        });
-                      });
-                    },
-                    child: Text('Open Location Settings')),
+                  onPressed: () async {
+                    try {
+                      final serviceEnabled =
+                          await Geolocator.isLocationServiceEnabled();
+                      if (!serviceEnabled) {
+                        await Geolocator.openLocationSettings();
+                      } else {
+                        await Geolocator.openAppSettings();
+                      }
+                    } catch (e) {
+                      debugPrint('Open settings failed: $e');
+                    }
+                    if (mounted) Navigator.pop(context);
+                  },
+                  child: Text('Open Location Settings'),
+                ),
                 Spacer(),
               ]);
             } else {
